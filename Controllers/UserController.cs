@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using tickets.Data;
@@ -38,17 +40,41 @@ namespace tickets.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> CreateUser(UserCreateDto userDto)
         {
+            if (
+                await _context
+                    .Users
+                    .AnyAsync(u =>
+                        u.Username == userDto.Username ||
+                        u.Email == userDto.Email)
+            )
+            {
+                return BadRequest("Username or email already exists.");
+            }
+
             var user =
                 new User {
                     Username = userDto.Username,
-                    // Password = HashPassword(userDto.Password), // Implement password hashing
-                    Email = userDto.Email
+                    Email = userDto.Email,
+                    PasswordHash = HashPassword(userDto.Password)
                 };
 
             _context.Users.Add (user);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        }
+
+        private string HashPassword(string password)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var hashedBytes =
+                    sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                return BitConverter
+                    .ToString(hashedBytes)
+                    .Replace("-", "")
+                    .ToLower();
+            }
         }
 
         [HttpPut("{id}")]

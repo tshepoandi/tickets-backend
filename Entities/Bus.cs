@@ -10,11 +10,11 @@ namespace tickets.Entities
 
         [Required]
         [StringLength(50)]
-        public string BusNumber { get; set; }
+        public string? BusNumber { get; set; }
 
         public int Capacity { get; set; }
 
-        public ICollection<Schedule> Schedules { get; set; }
+        public ICollection<Schedule>? Schedules { get; set; }
     }
 
     public class Route
@@ -23,11 +23,11 @@ namespace tickets.Entities
 
         [Required]
         [StringLength(100)]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public ICollection<RouteStop> RouteStops { get; set; }
+        public ICollection<RouteStop>? RouteStops { get; set; }
 
-        public ICollection<Schedule> Schedules { get; set; }
+        public ICollection<Schedule>? Schedules { get; set; }
     }
 
     public class Stop
@@ -36,9 +36,9 @@ namespace tickets.Entities
 
         [Required]
         [StringLength(100)]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public ICollection<RouteStop> RouteStops { get; set; }
+        public ICollection<RouteStop>? RouteStops { get; set; }
     }
 
     public class RouteStop
@@ -47,11 +47,11 @@ namespace tickets.Entities
 
         public int RouteId { get; set; }
 
-        public Route Route { get; set; }
+        public Route? Route { get; set; }
 
         public int StopId { get; set; }
 
-        public Stop Stop { get; set; }
+        public Stop? Stop { get; set; }
 
         public int Order { get; set; }
     }
@@ -62,11 +62,11 @@ namespace tickets.Entities
 
         public int RouteId { get; set; }
 
-        public Route Route { get; set; }
+        public Route? Route { get; set; }
 
         public int BusId { get; set; }
 
-        public Bus Bus { get; set; }
+        public Bus? Bus { get; set; }
 
         public TimeSpan DepartureTime { get; set; }
     }
@@ -77,12 +77,27 @@ namespace tickets.Entities
 
         public int UserId { get; set; }
 
-        public User User { get; set; }
+        public User? User { get; set; }
 
         public int ScheduleId { get; set; }
 
-        public Schedule Schedule { get; set; }
+        public Schedule? Schedule { get; set; }
 
         public DateTime PurchaseDate { get; set; }
+    }
+
+    public class Booking
+    {
+        public int Id { get; set; }
+
+        public DateTime BookingDate { get; set; }
+
+        public User? User { get; set; }
+
+        public int UserId { get; set; }
+
+        public Schedule? Schedule { get; set; }
+
+        public int ScheduleId { get; set; }
     }
 }

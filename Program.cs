@@ -4,11 +4,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using tickets.Data;
 using tickets.Entities;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddNewtonsoftJson(options =>
+    {
+        options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+    });
+
 builder.Services.AddDbContext<TicketsDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -32,6 +38,10 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseCors(builder => builder
+    .WithOrigins("http://localhost:3000", "http://localhost:5173")
+    .AllowAnyMethod()
+    .AllowAnyHeader());
 
 // Seed data
 using (var scope = app.Services.CreateScope())

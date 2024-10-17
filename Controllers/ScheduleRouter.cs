@@ -17,22 +17,25 @@ namespace tickets.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Schedule>>> GetSchedules()
+        public async Task<ActionResult<object>> GetSchedules()
         {
-            return await _context
-                .Schedules
-                .Include(s => s.Route)
-                .Include(s => s.Bus)
-                .Select(s =>
-                    new {
-                        s.Id,
-                        s.RouteId,
-                        RouteName = s.Route.Name,
-                        s.BusId,
-                        BusNumber = s.Bus.BusNumber,
-                        s.DepartureTime
-                    })
-                .ToListAsync();
+            var schedules =
+                await _context
+                    .Schedules
+                    .Include(s => s.Route)
+                    .Include(s => s.Bus)
+                    .Select(s =>
+                        new {
+                            s.Id,
+                            s.RouteId,
+                            RouteName = s.Route.Name,
+                            s.BusId,
+                            BusNumber = s.Bus.BusNumber,
+                            s.DepartureTime
+                        })
+                    .ToListAsync();
+
+            return Ok(schedules);
         }
 
         [HttpGet("{id}/available-seats")]

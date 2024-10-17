@@ -1,8 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using tickets.Data;
 using tickets.Entities;
 
 using Route = tickets.Entities.Route;
@@ -29,6 +29,8 @@ namespace tickets.Data
                     return; // Data was already seeded
                 }
 
+                var random = new Random();
+
                 // Add stops
                 var stops =
                     new Stop[] {
@@ -36,46 +38,42 @@ namespace tickets.Data
                         new Stop { Name = "Randburg" },
                         new Stop { Name = "Midrand Second" },
                         new Stop { Name = "Midrand First" },
-                        new Stop { Name = "Mecer" }
+                        new Stop { Name = "Mecer" },
+                        new Stop { Name = "Pretoria" },
+                        new Stop { Name = "Centurion" },
+                        new Stop { Name = "Sandton" }
                     };
                 context.Stops.AddRange (stops);
                 context.SaveChanges();
 
-                // Add route
-                var route = new Route { Name = "Mecer to Johannesburg CBD" };
-                context.Routes.Add (route);
+                // Add routes
+                var routes =
+                    new Route[] {
+                        new Route { Name = "Mecer to Johannesburg CBD" },
+                        new Route { Name = "Pretoria to Sandton" },
+                        new Route { Name = "Centurion to Randburg" }
+                    };
+                context.Routes.AddRange (routes);
                 context.SaveChanges();
 
                 // Add route stops
-                var routeStops =
-                    new RouteStop[] {
-                        new RouteStop {
-                            RouteId = route.Id,
-                            StopId = stops[4].Id,
-                            Order = 1
-                        }, // Mecer
-                        new RouteStop {
-                            RouteId = route.Id,
-                            StopId = stops[3].Id,
-                            Order = 2
-                        }, // Midrand First
-                        new RouteStop {
-                            RouteId = route.Id,
-                            StopId = stops[2].Id,
-                            Order = 3
-                        }, // Midrand Second
-                        new RouteStop {
-                            RouteId = route.Id,
-                            StopId = stops[1].Id,
-                            Order = 4
-                        }, // Randburg
-                        new RouteStop {
-                            RouteId = route.Id,
-                            StopId = stops[0].Id,
-                            Order = 5
-                        } // Johannesburg CBD
-                    };
-                context.RouteStops.AddRange (routeStops);
+                foreach (var route in routes)
+                {
+                    var shuffledStops =
+                        stops.OrderBy(x => random.Next()).ToList();
+                    var selectedStops =
+                        shuffledStops.Take(random.Next(3, 6)).ToList();
+                    for (int i = 0; i < selectedStops.Count; i++)
+                    {
+                        context
+                            .RouteStops
+                            .Add(new RouteStop {
+                                RouteId = route.Id,
+                                StopId = selectedStops[i].Id,
+                                Order = i + 1
+                            });
+                    }
+                }
                 context.SaveChanges();
 
                 // Add buses
@@ -83,30 +81,31 @@ namespace tickets.Data
                     new Bus[] {
                         new Bus { BusNumber = "Bus001", Capacity = 50 },
                         new Bus { BusNumber = "Bus002", Capacity = 50 },
-                        new Bus { BusNumber = "Bus003", Capacity = 50 }
+                        new Bus { BusNumber = "Bus003", Capacity = 50 },
+                        new Bus { BusNumber = "Bus004", Capacity = 50 },
+                        new Bus { BusNumber = "Bus005", Capacity = 50 }
                     };
                 context.Buses.AddRange (buses);
                 context.SaveChanges();
 
                 // Add schedules
-                var schedules =
-                    new Schedule[] {
-                        new Schedule {
-                            RouteId = route.Id,
-                            BusId = buses[0].Id,
-                            DepartureTime = new TimeSpan(6, 0, 0)
-                        },
-                        new Schedule {
-                            RouteId = route.Id,
-                            BusId = buses[1].Id,
-                            DepartureTime = new TimeSpan(13, 0, 0)
-                        },
-                        new Schedule {
-                            RouteId = route.Id,
-                            BusId = buses[2].Id,
-                            DepartureTime = new TimeSpan(17, 0, 0)
-                        }
-                    };
+                var schedules = new List<Schedule>();
+                foreach (var route in routes)
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        var departureTime =
+                            new TimeSpan(random.Next(5, 20),
+                                random.Next(0, 60),
+                                0);
+                        schedules
+                            .Add(new Schedule {
+                                RouteId = route.Id,
+                                BusId = buses[random.Next(buses.Length)].Id,
+                                DepartureTime = departureTime
+                            });
+                    }
+                }
                 context.Schedules.AddRange (schedules);
                 context.SaveChanges();
             }
